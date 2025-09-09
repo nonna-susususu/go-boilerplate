@@ -18,8 +18,8 @@ import (
 	"github.com/fastworkco/go-boilerplate/internal/driver/server/handler"
 	"github.com/fastworkco/go-boilerplate/internal/metrics"
 
-	authService "github.com/fastworkco/go-boilerplate/internal/app/auth"
-	"github.com/fastworkco/go-boilerplate/internal/app/todo"
+	authService "github.com/fastworkco/go-boilerplate/internal/service/auth"
+	"github.com/fastworkco/go-boilerplate/internal/service/todo"
 )
 
 func main() {

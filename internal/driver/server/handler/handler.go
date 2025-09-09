@@ -3,9 +3,9 @@ package handler
 import (
 	"errors"
 
-	"github.com/fastworkco/go-boilerplate/internal/app"
-	"github.com/fastworkco/go-boilerplate/internal/app/todo"
 	authMiddleware "github.com/fastworkco/go-boilerplate/internal/driver/server/middleware/auth"
+	app "github.com/fastworkco/go-boilerplate/internal/service"
+	"github.com/fastworkco/go-boilerplate/internal/service/todo"
 	"github.com/gofiber/fiber/v2"
 )
 

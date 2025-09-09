@@ -3,7 +3,6 @@ package config
 import "github.com/fastworkco/common-go/telemetry/v1"
 
 type Config struct {
-	SlotConfigsJSON  string `env:"SLOTS_CONFIG_JSON,file,required"`
 	Telemetry        telemetry.Config
 	InternalServices InternalServices
 	AppConfig        AppConfig
