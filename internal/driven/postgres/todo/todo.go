@@ -1,4 +1,4 @@
-package postgres
+package todo
 
 import (
 	"github.com/fastworkco/go-boilerplate/internal/domain"
@@ -18,7 +18,6 @@ func (t *Todo) ToDomain() domain.Todo {
 }
 
 type TodoRepository struct {
-	baseGormRepository
 	db *gorm.DB
 }
 

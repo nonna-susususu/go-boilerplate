@@ -34,6 +34,15 @@ func (am AuthMiddleware) GetTokenInfo() fiber.Handler {
 			return c.Next()
 		}
 
+		if data.UserID == "" {
+			return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{
+				"error": fiber.Map{
+					"code":   "UNAUTHORIZED",
+					"detail": "unauthorized",
+				},
+			})
+		}
+
 		c.Locals(ContextAuthUserID, data.UserID)
 		c.Locals(ContextAuthRole, data.Role)
 		c.Locals(ContextRequestToken, token)

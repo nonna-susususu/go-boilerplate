@@ -1,4 +1,4 @@
-package server
+package fiber
 
 import (
 	"context"
@@ -7,9 +7,9 @@ import (
 
 	"github.com/fastworkco/common-go/log/v1"
 	"github.com/fastworkco/go-boilerplate/internal/config"
-	"github.com/fastworkco/go-boilerplate/internal/driver/server/handler"
-	"github.com/fastworkco/go-boilerplate/internal/driver/server/middleware"
-	authMiddleware "github.com/fastworkco/go-boilerplate/internal/driver/server/middleware/auth"
+	"github.com/fastworkco/go-boilerplate/internal/driver/fiber/handler"
+	"github.com/fastworkco/go-boilerplate/internal/driver/fiber/middleware"
+	authMiddleware "github.com/fastworkco/go-boilerplate/internal/driver/fiber/middleware/auth"
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/middleware/cors"
 	"github.com/gofiber/fiber/v2/middleware/recover"
@@ -17,7 +17,7 @@ import (
 )
 
 // Server represents the HTTP server
-type Server struct {
+type FiberServer struct {
 	app     *fiber.App
 	appName string
 	port    int
@@ -27,9 +27,9 @@ type Server struct {
 func New(
 	appConfig config.AppConfig,
 	authProvider authMiddleware.AuthProvider,
-	handler *handler.Handler,
+	handlers *handler.Handlers,
 	logger *zap.Logger,
-) *Server {
+) *FiberServer {
 	app := fiber.New(fiber.Config{
 		AppName:      appConfig.AppName,
 		ErrorHandler: log.CreateFiberLogContextErrorHandler(),
@@ -45,19 +45,18 @@ func New(
 	app.Use(recover.New())
 
 	// Setup routes
-	app.Get("/health", handler.HealthCheck)
+	app.Get("/health", handlers.HealthHandler.HealthCheck)
 
 	// api group v1 (external)
 	authMiddleware := authMiddleware.NewAuthMiddleware(authProvider, logger)
 	v1 := app.Group("/api/v1")
 	v1.Use(authMiddleware.GetTokenInfo())
-	v1.Use(authMiddleware.AuthUserGuard())
 
-	v1.Get("/todo.getAll", handler.ListTodo)
+	v1.Get("/todo.getAll", handlers.TodoHandler.ListTodo)
 
 	app.Use(middleware.PageNotFound)
 
-	return &Server{
+	return &FiberServer{
 		app:     app,
 		appName: appConfig.AppName,
 		port:    appConfig.Port,
@@ -65,7 +64,7 @@ func New(
 }
 
 // Start starts the server and handles graceful shutdown
-func (s *Server) Start(ctx context.Context) error {
+func (s *FiberServer) Start(ctx context.Context) error {
 	// Listen for context done for graceful shutdown
 	shutdownComplete := make(chan struct{})
 	go func() {

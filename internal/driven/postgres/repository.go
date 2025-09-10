@@ -46,9 +46,7 @@ func (u *GormTransactionControl) Do(ctx context.Context, fn func(txCtx context.C
 	return tx.Commit().Error
 }
 
-type baseGormRepository struct{}
-
-func (r *baseGormRepository) getDB(ctx context.Context, db *gorm.DB) *gorm.DB {
+func GetDBFromCtx(ctx context.Context, db *gorm.DB) *gorm.DB {
 	if tx, ok := ctx.Value(GormTransactionContextKey).(*gorm.DB); ok {
 		return tx
 	}

@@ -1,4 +1,4 @@
-package handler
+package health
 
 import (
 	"time"
@@ -13,7 +13,7 @@ type HealthResponse struct {
 }
 
 // HealthCheck handles the health check endpoint
-func (h Handler) HealthCheck(c *fiber.Ctx) error {
+func (h *HealthHandler) HealthCheck(c *fiber.Ctx) error {
 	response := HealthResponse{
 		Status:    "ok",
 		Timestamp: time.Now(),

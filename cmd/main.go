@@ -12,12 +12,15 @@ import (
 	"github.com/fastworkco/common-go/log/v1"
 	"github.com/fastworkco/common-go/telemetry/v1"
 	"github.com/fastworkco/go-boilerplate/internal/config"
-	drivenHttp "github.com/fastworkco/go-boilerplate/internal/driven/http"
+	authClient "github.com/fastworkco/go-boilerplate/internal/driven/http/auth"
 	"github.com/fastworkco/go-boilerplate/internal/driven/postgres"
-	"github.com/fastworkco/go-boilerplate/internal/driver/server"
-	"github.com/fastworkco/go-boilerplate/internal/driver/server/handler"
+	"github.com/fastworkco/go-boilerplate/internal/driver/fiber"
+	"github.com/fastworkco/go-boilerplate/internal/driver/fiber/handler"
+	"github.com/fastworkco/go-boilerplate/internal/driver/fiber/handler/health"
 	"github.com/fastworkco/go-boilerplate/internal/metrics"
 
+	todoRepo "github.com/fastworkco/go-boilerplate/internal/driven/postgres/todo"
+	todoHandler "github.com/fastworkco/go-boilerplate/internal/driver/fiber/handler/todo"
 	authService "github.com/fastworkco/go-boilerplate/internal/service/auth"
 	"github.com/fastworkco/go-boilerplate/internal/service/todo"
 )
@@ -40,18 +43,24 @@ func main() {
 	}
 
 	db := postgres.InitGormPostgres(cfg.AppConfig.Env, cfg.DatabaseConfig, log.Logger)
-	todoRepository := postgres.NewTodoRepository(db)
+	todoRepository := todoRepo.NewTodoRepository(db)
 
 	todoService := todo.NewTodoService(todo.TodoServiceDependencies{
 		TodoRepository: todoRepository,
 	})
 
-	// setup handler
-	handler := handler.NewHandler(handler.HandlerDependencies{
+	healthHandler := health.NewHealthHandler()
+	_todoHandler := todoHandler.NewTodoHandler(todoHandler.TodoHandlerDependencies{
 		TodoService: todoService,
 	})
 
-	authClient := drivenHttp.NewAuthClient(drivenHttp.AuthClientConfig{
+	// setup handlers
+	handler := handler.NewHandlers(handler.HandlersDependencies{
+		HealthHandler: healthHandler,
+		TodoHandler:   _todoHandler,
+	})
+
+	authClient := authClient.NewAuthClient(authClient.AuthClientConfig{
 		Endpoint: cfg.RemoteConfig.FastworkAuthProviderURL,
 	})
 
@@ -59,7 +68,7 @@ func main() {
 		AuthClient: authClient,
 	})
 
-	srv := server.New(cfg.AppConfig, authService, handler, log.Logger)
+	srv := fiber.New(cfg.AppConfig, authService, handler, log.Logger)
 
 	wg := sync.WaitGroup{}
 

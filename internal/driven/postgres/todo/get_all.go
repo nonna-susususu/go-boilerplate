@@ -1,10 +1,11 @@
-package postgres
+package todo
 
 import (
 	"context"
 	"errors"
 
 	"github.com/fastworkco/go-boilerplate/internal/domain"
+	"github.com/fastworkco/go-boilerplate/internal/driven/postgres"
 	"github.com/samber/lo"
 	"gorm.io/gorm"
 )
@@ -12,7 +13,7 @@ import (
 func (r *TodoRepository) GetAll(ctx context.Context) ([]domain.Todo, error) {
 	var todos []*Todo
 
-	db := r.getDB(ctx, r.db)
+	db := postgres.GetDBFromCtx(ctx, r.db)
 
 	if err := db.Find(&todos).Error; err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
